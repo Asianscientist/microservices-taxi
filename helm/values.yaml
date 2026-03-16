@@ -1,0 +1,38 @@
+accountsService:
+  name: accounts-service
+  image: 18c336445927/accounts-service:latest
+  replicas: 1
+  port: 8000
+
+driversService:
+  name: drivers-service
+  image: 18c336445927/drivers-service:latest
+  replicas: 1
+  port: 8000
+
+notificationsService:
+  name: notifications-service
+  image: 18c336445927/notifications-service:latest
+  replicas: 1
+  port: 8000
+
+paymentsService:
+  name: payments-service
+  image: 18c336445927/payments-service:latest
+  replicas: 1
+  port: 8000
+
+reviewsService:
+  name: reviews-service
+  image: 18c336445927/reviews-service:latest
+  replicas: 1
+  port: 8000
+
+tripsService:
+  name: trips-service
+  image: 18c336445927/trips-service:latest
+  replicas: 1
+  port: 8000
+
+imagePullSecrets:
+  - name: dockerhub-secret
