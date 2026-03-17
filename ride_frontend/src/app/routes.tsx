@@ -8,6 +8,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { RegisterDriver } from './pages/RegisterDriver';
 import { AdminDashboard } from './pages/AdminDashboard';
+import { RequireAuth } from './components/RequireAuth';
 
 export const router = createBrowserRouter([
   {
@@ -24,7 +25,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/register-driver',
-    Component: RegisterDriver,
+    element: (
+      <RequireAuth>
+        <RegisterDriver />
+      </RequireAuth>
+    ),
   },
   {
     path: '/drivers',
@@ -36,11 +41,19 @@ export const router = createBrowserRouter([
   },
   {
     path: '/book/:id',
-    Component: BookRide,
+    element: (
+      <RequireAuth>
+        <BookRide />
+      </RequireAuth>
+    ),
   },
   {
     path: '/bookings',
-    Component: Bookings,
+    element: (
+      <RequireAuth>
+        <Bookings />
+      </RequireAuth>
+    ),
   },
   {
     path: '/admin',
