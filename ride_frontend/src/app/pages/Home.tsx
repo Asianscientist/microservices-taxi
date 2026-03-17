@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Car, Shield, Star, TrendingUp, Users, Clock } from 'lucide-react';
+import { Car, Shield, Star, TrendingUp, Users, Clock, Settings } from 'lucide-react';
 import { SearchForm } from '../components/SearchForm';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
+import { useAuth } from '../../hooks/useAuth';
 
 export function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleSearch = (from: string, to: string, date: string, seats: number) => {
     navigate(`/drivers?from=${from}&to=${to}&date=${date}&seats=${seats}`);
@@ -62,6 +64,12 @@ export function Home() {
               <Button variant="ghost" onClick={() => navigate('/bookings')}>
                 My Bookings
               </Button>
+              {user?.user_type === 'admin' && (
+                <Button variant="ghost" onClick={() => navigate('/admin')}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
+              )}
               <Button onClick={() => navigate('/drivers')}>
                 Book a Ride
               </Button>

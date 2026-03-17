@@ -1,7 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router';
-import { Car, SlidersHorizontal, ArrowLeft } from 'lucide-react';
-import { drivers } from '../data/mockData';
+import { Car, SlidersHorizontal, ArrowLeft, Loader } from 'lucide-react';
 import { DriverCard } from '../components/DriverCard';
 import { SearchForm } from '../components/SearchForm';
 import { Button } from '../components/ui/button';
@@ -15,6 +14,8 @@ import {
   SelectValue,
 } from '../components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import DriverService from '../../services/driver.service';
+import TripService from '../../services/trip.service';
 
 export function Drivers() {
   const [searchParams] = useSearchParams();
@@ -23,46 +24,76 @@ export function Drivers() {
   const [sortBy, setSortBy] = useState('rating');
   const [minRating, setMinRating] = useState([4.0]);
   const [maxPrice, setMaxPrice] = useState([50]);
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const from = searchParams.get('from');
   const to = searchParams.get('to');
+  const date = searchParams.get('date');
+  const seats = searchParams.get('seats');
+
+  // Fetch drivers on component mount
+  useEffect(() => {
+    const fetchDrivers = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await DriverService.listDrivers({
+          is_available: true,
+        });
+        
+        // Handle both paginated and non-paginated responses
+        const driversList = Array.isArray(response) ? response : response.results || response.data || [];
+        
+        setDrivers(driversList);
+      } catch (err) {
+        console.error('Error fetching drivers:', err);
+        setError('Failed to load drivers. Please try again.');
+        setDrivers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDrivers();
+  }, []);
 
   const filteredDrivers = useMemo(() => {
+    if (!drivers || drivers.length === 0) return [];
+    
     let result = [...drivers];
 
-    // Filter by route if search params exist
-    if (from || to) {
-      result = result.filter(driver => {
-        if (from && !driver.routes.includes(from)) return false;
-        if (to && !driver.routes.includes(to)) return false;
-        return true;
-      });
-    }
-
     // Filter by rating
-    result = result.filter(driver => driver.rating >= minRating[0]);
+    result = result.filter(driver => {
+      const rating = driver.average_rating || driver.rating || 0;
+      return rating >= minRating[0];
+    });
 
     // Filter by price
-    result = result.filter(driver => driver.pricePerSeat <= maxPrice[0]);
+    result = result.filter(driver => {
+      // This will need adjustment based on actual backend trip pricing
+      return true; // Placeholder - filter by actual price from trips
+    });
 
     // Sort
     result.sort((a, b) => {
       switch (sortBy) {
         case 'rating':
-          return b.rating - a.rating;
+          return (b.average_rating || b.rating || 0) - (a.average_rating || a.rating || 0);
         case 'price-low':
-          return a.pricePerSeat - b.pricePerSeat;
+          return 0; // Will be sorted by trip price
         case 'price-high':
-          return b.pricePerSeat - a.pricePerSeat;
+          return 0; // Will be sorted by trip price
         case 'trips':
-          return b.totalTrips - a.totalTrips;
+          return (b.total_trips || b.totalTrips || 0) - (a.total_trips || a.totalTrips || 0);
         default:
           return 0;
       }
     });
 
     return result;
-  }, [from, to, sortBy, minRating, maxPrice]);
+  }, [drivers, sortBy, minRating]);
 
   const handleSearch = (from: string, to: string, date: string, seats: number) => {
     navigate(`/drivers?from=${from}&to=${to}&date=${date}&seats=${seats}`);
@@ -184,7 +215,25 @@ export function Drivers() {
 
           {/* Driver List */}
           <main className="lg:col-span-3">
-            {filteredDrivers.length > 0 ? (
+            {loading ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Loader className="w-8 h-8 text-gray-400 mx-auto mb-4 animate-spin" />
+                  <p className="text-gray-600">Loading drivers...</p>
+                </CardContent>
+              </Card>
+            ) : error ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Car className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2 text-red-600">Error</h3>
+                  <p className="text-gray-600 mb-4">{error}</p>
+                  <Button onClick={() => window.location.reload()}>
+                    Try Again
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : filteredDrivers.length > 0 ? (
               <div className="space-y-4">
                 {filteredDrivers.map((driver) => (
                   <DriverCard key={driver.id} driver={driver} />
