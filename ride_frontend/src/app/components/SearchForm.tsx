@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Search, Calendar } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
-import { cities } from '../data/mockData';
+import DriverService from '../../services/driver.service';
 
 interface SearchFormProps {
   onSearch?: (from: string, to: string, date: string, seats: number) => void;
@@ -22,6 +22,34 @@ export function SearchForm({ onSearch, compact = false }: SearchFormProps) {
   const [to, setTo] = useState('');
   const [date, setDate] = useState('');
   const [seats, setSeats] = useState('1');
+  const [cities, setCities] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCities = async () => {
+      try {
+        const routes = await DriverService.getRoutes();
+        const list = Array.isArray(routes) ? routes : routes.results || routes.data || [];
+        const unique = new Set<string>();
+        for (const r of list) {
+          if (r?.from_city) unique.add(String(r.from_city));
+          if (r?.to_city) unique.add(String(r.to_city));
+        }
+        if (!cancelled) setCities(Array.from(unique).sort((a, b) => a.localeCompare(b)));
+      } catch {
+        if (!cancelled) setCities([]);
+      }
+    };
+    loadCities();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const toCityOptions = useMemo(() => {
+    if (!from) return cities;
+    return cities.filter((c) => c !== from);
+  }, [cities, from]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +83,7 @@ export function SearchForm({ onSearch, compact = false }: SearchFormProps) {
                   <SelectValue placeholder="To" />
                 </SelectTrigger>
                 <SelectContent>
-                  {cities.map((city) => (
+                  {toCityOptions.map((city) => (
                     <SelectItem key={city} value={city}>
                       {city}
                     </SelectItem>
@@ -126,7 +154,7 @@ export function SearchForm({ onSearch, compact = false }: SearchFormProps) {
                   <SelectValue placeholder="Select destination city" />
                 </SelectTrigger>
                 <SelectContent>
-                  {cities.map((city) => (
+                  {toCityOptions.map((city) => (
                     <SelectItem key={city} value={city}>
                       {city}
                     </SelectItem>
