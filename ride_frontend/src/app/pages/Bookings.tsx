@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import TripService from '../../services/trip.service';
+import { toast } from 'sonner';
 
 export function Bookings() {
   const navigate = useNavigate();
@@ -46,6 +47,19 @@ export function Bookings() {
 
     fetchBookings();
   }, []);
+
+  const cancelBooking = async (bookingId: number) => {
+    try {
+      await TripService.cancelBooking(bookingId);
+      toast.success('Booking cancelled');
+      const refreshed = await TripService.getBookings();
+      const list = Array.isArray(refreshed) ? refreshed : refreshed.results || refreshed.data || [];
+      setBookings(list);
+    } catch (e) {
+      console.error('Cancel booking error', e);
+      toast.error('Failed to cancel booking');
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -147,6 +161,7 @@ export function Bookings() {
                       variant="outline"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
+                      onClick={() => cancelBooking(Number(booking.id))}
                     >
                       Cancel
                     </Button>

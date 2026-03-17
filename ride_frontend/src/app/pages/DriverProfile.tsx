@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { 
   Star, 
@@ -9,28 +10,79 @@ import {
   ArrowLeft,
   CheckCircle
 } from 'lucide-react';
-import { drivers, reviews } from '../data/mockData';
 import { ReviewCard } from '../components/ReviewCard';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
+import DriverService from '../../services/driver.service';
 
 export function DriverProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const driver = drivers.find(d => d.id === id);
-  const driverReviews = reviews.filter(r => r.driverId === id);
+  const [driver, setDriver] = useState<any>(null);
+  const [driverReviews, setDriverReviews] = useState<any[]>([]);
+  const [ratingStats, setRatingStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!driver) {
+  useEffect(() => {
+    let cancelled = false;
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        if (!id) throw new Error('Missing driver id');
+
+        const driverId = parseInt(id);
+        const [driverData, reviewsData, statsData] = await Promise.all([
+          DriverService.getDriverById(driverId),
+          DriverService.getDriverReviews(driverId),
+          DriverService.getDriverRatingStats(driverId),
+        ]);
+
+        const reviewsList = Array.isArray(reviewsData) ? reviewsData : reviewsData.results || reviewsData.data || [];
+        if (!cancelled) {
+          setDriver(driverData);
+          setDriverReviews(reviewsList);
+          setRatingStats(statsData);
+        }
+      } catch (e) {
+        console.error('Failed to load driver profile', e);
+        if (!cancelled) setError('Failed to load driver profile. Please try again.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    fetchData();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <p className="text-gray-600">Loading driver profile...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error || !driver) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="p-8 text-center">
             <h2 className="text-2xl font-bold mb-4">Driver Not Found</h2>
+            <p className="text-gray-600 mb-4">{error || 'Driver not found'}</p>
             <Button onClick={() => navigate('/drivers')}>
-              Back to Drivers
+              Back to Trips
             </Button>
           </CardContent>
         </Card>
@@ -38,11 +90,22 @@ export function DriverProfile() {
     );
   }
 
-  const ratingDistribution = [5, 4, 3, 2, 1].map(rating => {
-    const count = driverReviews.filter(r => r.rating === rating).length;
-    const percentage = driverReviews.length > 0 ? (count / driverReviews.length) * 100 : 0;
-    return { rating, count, percentage };
-  });
+  const driverName = driver.user?.first_name && driver.user?.last_name
+    ? `${driver.user.first_name} ${driver.user.last_name}`
+    : driver.user_name || 'Driver';
+  const driverPhoto = driver.user?.profile_picture || driver.user_photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop';
+  const rating = Number(driver.average_rating || ratingStats?.average_rating || 0);
+  const totalTrips = Number(driver.total_trips || 0);
+
+  const ratingDistribution = useMemo(() => {
+    const dist = ratingStats?.rating_distribution;
+    const total = Number(ratingStats?.total_reviews || driverReviews.length || 0);
+    return [5, 4, 3, 2, 1].map((r) => {
+      const count = dist ? Number(dist[String(r)] || 0) : driverReviews.filter((x) => Number(x.rating) === r).length;
+      const percentage = total > 0 ? (count / total) * 100 : 0;
+      return { rating: r, count, percentage };
+    });
+  }, [ratingStats, driverReviews]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -75,47 +138,50 @@ export function DriverProfile() {
               <CardContent className="p-6">
                 <div className="flex gap-6">
                   <img
-                    src={driver.photo}
-                    alt={driver.name}
+                    src={driverPhoto}
+                    alt={driverName}
                     className="w-32 h-32 rounded-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop';
+                    }}
                   />
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h1 className="text-3xl font-bold">{driver.name}</h1>
-                          {driver.verified && (
+                          <h1 className="text-3xl font-bold">{driverName}</h1>
+                          {driver.license_verified && (
                             <Shield className="w-6 h-6 text-blue-600" fill="currentColor" />
                           )}
                         </div>
                         <div className="flex items-center gap-2 mb-3">
                           <div className="flex items-center gap-1">
                             <Star className="w-5 h-5 text-yellow-500" fill="currentColor" />
-                            <span className="text-xl font-bold">{driver.rating.toFixed(2)}</span>
+                            <span className="text-xl font-bold">{rating.toFixed(2)}</span>
                           </div>
                           <span className="text-gray-500">
-                            ({driver.totalTrips} trips)
+                            ({totalTrips} trips)
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <p className="text-gray-700 mb-4">{driver.bio}</p>
+                    <p className="text-gray-700 mb-4">{driver.bio || ''}</p>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex items-center gap-2 text-sm">
                         <Car className="w-4 h-4 text-gray-400" />
                         <span>
-                          {driver.vehicleYear} {driver.vehicleModel}
+                          {driver.vehicle_year} {driver.vehicle_model}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Calendar className="w-4 h-4 text-gray-400" />
-                        <span>{driver.yearsExperience} years experience</span>
+                        <span>{driver.years_of_experience} years experience</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Award className="w-4 h-4 text-gray-400" />
-                        <span>License: {driver.licensePlate}</span>
+                        <span>Plate: {driver.license_plate}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <CheckCircle className="w-4 h-4 text-green-600" />
@@ -133,9 +199,9 @@ export function DriverProfile() {
                     <h3 className="font-semibold">Available Routes</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {driver.routes.map((route, index) => (
+                    {(driver.available_routes || []).map((route: any, index: number) => (
                       <Badge key={index} variant="secondary" className="text-sm px-3 py-1">
-                        {route}
+                        {route?.name || `${route?.from_city || ''} → ${route?.to_city || ''}`}
                       </Badge>
                     ))}
                   </div>
@@ -153,13 +219,13 @@ export function DriverProfile() {
                 <div className="mb-6">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="text-center">
-                      <div className="text-4xl font-bold">{driver.rating.toFixed(1)}</div>
+                      <div className="text-4xl font-bold">{rating.toFixed(1)}</div>
                       <div className="flex items-center gap-1 justify-center mt-1">
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
                             className={`w-4 h-4 ${
-                              i < Math.round(driver.rating) ? 'text-yellow-500' : 'text-gray-300'
+                              i < Math.round(rating) ? 'text-yellow-500' : 'text-gray-300'
                             }`}
                             fill="currentColor"
                           />
@@ -209,24 +275,23 @@ export function DriverProfile() {
             <Card className="sticky top-24">
               <CardContent className="p-6">
                 <div className="text-center mb-6">
-                  <div className="text-4xl font-bold text-blue-600 mb-1">
-                    ${driver.pricePerSeat}
+                  <div className="text-gray-600">
+                    Pricing depends on the selected trip.
                   </div>
-                  <div className="text-gray-600">per seat</div>
                 </div>
 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Available Seats</span>
-                    <span className="font-semibold">{driver.availableSeats}</span>
+                    <span className="font-semibold">Varies</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Total Trips</span>
-                    <span className="font-semibold">{driver.totalTrips}</span>
+                    <span className="font-semibold">{totalTrips}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Experience</span>
-                    <span className="font-semibold">{driver.yearsExperience} years</span>
+                    <span className="font-semibold">{driver.years_of_experience} years</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Response Time</span>
@@ -240,16 +305,16 @@ export function DriverProfile() {
                   <Button
                     className="w-full"
                     size="lg"
-                    onClick={() => navigate(`/book/${driver.id}`)}
+                    onClick={() => navigate('/drivers')}
                   >
-                    Book This Driver
+                    Browse Trips
                   </Button>
                   <Button
                     variant="outline"
                     className="w-full"
                     onClick={() => navigate('/drivers')}
                   >
-                    View Other Drivers
+                    View Available Trips
                   </Button>
                 </div>
 

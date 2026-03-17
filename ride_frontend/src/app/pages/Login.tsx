@@ -7,10 +7,11 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Separator } from '../components/ui/separator';
 import { toast } from 'sonner';
-import AuthService from '../../services/auth.service';
+import { useAuth } from '../../hooks/useAuth';
 
 export function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -28,26 +29,11 @@ export function Login() {
 
     setIsLoading(true);
     try {
-      const response = await AuthService.login({
-        email: formData.email,
-        password: formData.password,
-      });
-      
-      // Store tokens and user data
-      localStorage.setItem('access_token', response.tokens.access);
-      localStorage.setItem('refresh_token', response.tokens.refresh);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      await login(formData.email, formData.password);
 
       toast.success('Login successful!');
       
-      // Redirect based on user type
-      if (response.user.user_type === 'admin') {
-        navigate('/admin');
-      } else if (response.user.user_type === 'driver') {
-        navigate('/driver/dashboard');
-      } else {
-        navigate('/');
-      }
+      navigate('/');
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Invalid credentials. Please try again.');

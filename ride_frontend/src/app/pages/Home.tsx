@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Car, Shield, Star, TrendingUp, Users, Clock, Settings } from 'lucide-react';
 import { SearchForm } from '../components/SearchForm';
@@ -8,7 +7,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 export function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const handleSearch = (from: string, to: string, date: string, seats: number) => {
     navigate(`/drivers?from=${from}&to=${to}&date=${date}&seats=${seats}`);
@@ -59,7 +58,7 @@ export function Home() {
             </div>
             <nav className="flex items-center gap-4">
               <Button variant="ghost" onClick={() => navigate('/drivers')}>
-                Browse Drivers
+                Browse Trips
               </Button>
               <Button variant="ghost" onClick={() => navigate('/bookings')}>
                 My Bookings
@@ -68,6 +67,26 @@ export function Home() {
                 <Button variant="ghost" onClick={() => navigate('/admin')}>
                   <Settings className="w-4 h-4 mr-2" />
                   Admin
+                </Button>
+              )}
+              {!user ? (
+                <>
+                  <Button variant="ghost" onClick={() => navigate('/login')}>
+                    Login
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate('/register')}>
+                    Register
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    await logout();
+                    navigate('/');
+                  }}
+                >
+                  Logout
                 </Button>
               )}
               <Button onClick={() => navigate('/drivers')}>

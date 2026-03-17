@@ -25,21 +25,18 @@ import {
 } from '../components/ui/select';
 import { Separator } from '../components/ui/separator';
 import { toast } from 'sonner';
-import DriverService from '../../services/driver.service';
 import TripService from '../../services/trip.service';
 import { useAuth } from '../../hooks/useAuth';
 
 export function BookRide() {
-  const { id } = useParams();
+  const { id } = useParams(); // trip id
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [driver, setDriver] = useState<any>(null);
-  const [trips, setTrips] = useState<any[]>([]);
+  const [trip, setTrip] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    tripId: '',
     seats: '1',
     pickupLocation: '',
     pickupNotes: ''
@@ -47,23 +44,16 @@ export function BookRide() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch driver and trips
+  // Fetch trip (and embedded driver) by id
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // Fetch driver profile
-        if (id) {
-          const driverData = await DriverService.getDriverById(parseInt(id));
-          setDriver(driverData);
-        }
-        
-        // Fetch available trips
-        const tripsData = await TripService.listTrips();
-        const tripsList = Array.isArray(tripsData) ? tripsData : tripsData.results || [];
-        setTrips(tripsList);
+        if (!id) throw new Error('Missing trip id');
+        const tripData = await TripService.getTripDetails(parseInt(id));
+        setTrip(tripData);
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load booking information. Please try again.');
@@ -88,15 +78,15 @@ export function BookRide() {
     );
   }
 
-  if (error || !driver) {
+  if (error || !trip) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="p-8 text-center">
             <h2 className="text-2xl font-bold mb-4">Error</h2>
-            <p className="text-gray-600 mb-4">{error || 'Driver not found'}</p>
+            <p className="text-gray-600 mb-4">{error || 'Trip not found'}</p>
             <Button onClick={() => navigate('/drivers')}>
-              Back to Drivers
+              Back to Trips
             </Button>
           </CardContent>
         </Card>
@@ -104,21 +94,20 @@ export function BookRide() {
     );
   }
 
-  const selectedTrip = trips.find(t => t.id === parseInt(formData.tripId));
-  const totalPrice = selectedTrip ? (selectedTrip.price_per_seat || 0) * parseInt(formData.seats || '1') : 0;
+  const totalPrice = (Number(trip.price_per_seat) || 0) * parseInt(formData.seats || '1');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.tripId || !formData.seats) {
-      toast.error('Please select a trip and number of seats');
+    if (!formData.seats) {
+      toast.error('Please select number of seats');
       return;
     }
 
     setIsSubmitting(true);
     try {
       const bookingData = {
-        trip_id: parseInt(formData.tripId),
+        trip_id: parseInt(id || '0'),
         number_of_seats: parseInt(formData.seats),
         pickup_location: formData.pickupLocation,
         pickup_notes: formData.pickupNotes,
@@ -147,7 +136,7 @@ export function BookRide() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(`/driver/${driver.id}`)}
+              onClick={() => navigate(`/driver/${trip.driver?.id}`)}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
@@ -168,39 +157,20 @@ export function BookRide() {
             {/* Booking Form */}
             <div className="lg:col-span-2">
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Trip Selection */}
+                {/* Trip Info */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Select Trip</CardTitle>
+                    <CardTitle>Trip Details</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="trip">Available Trips *</Label>
-                      <Select 
-                        value={formData.tripId} 
-                        onValueChange={(value) => setFormData({...formData, tripId: value})}
-                      >
-                        <SelectTrigger id="trip">
-                          <SelectValue placeholder="Select a trip" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {trips.map((trip) => (
-                            <SelectItem key={trip.id} value={trip.id.toString()}>
-                              {trip.from_city} → {trip.to_city} on {new Date(trip.departure_datetime).toLocaleDateString()} @ ${trip.price_per_seat}/seat
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-sm text-blue-900">
+                        <strong>Route:</strong> {trip.from_city} → {trip.to_city}<br/>
+                        <strong>Departure:</strong> {new Date(trip.departure_datetime).toLocaleString()}<br/>
+                        <strong>Price:</strong> ${trip.price_per_seat} / seat<br/>
+                        <strong>Available Seats:</strong> {trip.available_seats}
+                      </p>
                     </div>
-
-                    {selectedTrip && (
-                      <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-sm text-blue-900">
-                          <strong>Departure:</strong> {new Date(selectedTrip.departure_datetime).toLocaleString()}<br/>
-                          <strong>Available Seats:</strong> {selectedTrip.available_seats}
-                        </p>
-                      </div>
-                    )}
 
                     <div className="space-y-2">
                       <Label htmlFor="seats">Number of Seats *</Label>
@@ -212,7 +182,7 @@ export function BookRide() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {selectedTrip && Array.from({ length: Math.min(selectedTrip.available_seats, 4) }, (_, i) => i + 1).map((num) => (
+                          {Array.from({ length: Math.min(Number(trip.available_seats || 0), 8) }, (_, i) => i + 1).map((num) => (
                             <SelectItem key={num} value={num.toString()}>
                               {num} seat{num > 1 ? 's' : ''}
                             </SelectItem>
@@ -275,7 +245,7 @@ export function BookRide() {
                   type="submit" 
                   size="lg" 
                   className="w-full"
-                  disabled={isSubmitting || !formData.tripId}
+                  disabled={isSubmitting}
                 >
                   {isSubmitting ? 'Processing...' : `Confirm Booking - $${totalPrice.toFixed(2)}`}
                 </Button>
@@ -292,8 +262,8 @@ export function BookRide() {
                 {/* Driver Info */}
                   <div className="flex gap-3">
                     <img
-                      src={driver.user?.profile_picture || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'}
-                      alt={driver.user?.first_name}
+                      src={trip.driver?.user?.profile_picture || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop'}
+                      alt={trip.driver?.user?.first_name}
                       className="w-16 h-16 rounded-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop';
@@ -301,18 +271,18 @@ export function BookRide() {
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-1">
-                        <h3 className="font-semibold">{driver.user?.first_name} {driver.user?.last_name}</h3>
-                        {driver.is_verified && (
+                        <h3 className="font-semibold">{trip.driver?.user?.first_name} {trip.driver?.user?.last_name}</h3>
+                        {trip.driver?.license_verified && (
                           <Shield className="w-4 h-4 text-blue-600" fill="currentColor" />
                         )}
                       </div>
                       <div className="flex items-center gap-1 text-sm">
                         <Star className="w-3 h-3 text-yellow-500" fill="currentColor" />
-                        <span>{(driver.average_rating || 0).toFixed(2)}</span>
-                        <span className="text-gray-500">({driver.total_trips || 0} trips)</span>
+                        <span>{Number(trip.driver?.average_rating || 0).toFixed(2)}</span>
+                        <span className="text-gray-500">({trip.driver?.total_trips || 0} trips)</span>
                       </div>
                       <p className="text-sm text-gray-600 mt-1">
-                        {driver.vehicle_year} {driver.vehicle_model}
+                        {trip.driver?.vehicle_year} {trip.driver?.vehicle_model}
                       </p>
                     </div>
                   </div>
@@ -321,30 +291,26 @@ export function BookRide() {
 
                   {/* Trip Summary */}
                   <div className="space-y-3">
-                    {selectedTrip && (
-                      <>
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400 mt-1" />
-                          <div className="flex-1 text-sm">
-                            <div className="font-medium">{selectedTrip.from_city}</div>
-                            <div className="text-gray-400 my-1">↓</div>
-                            <div className="font-medium">{selectedTrip.to_city}</div>
-                          </div>
-                        </div>
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-gray-400 mt-1" />
+                      <div className="flex-1 text-sm">
+                        <div className="font-medium">{trip.from_city}</div>
+                        <div className="text-gray-400 my-1">↓</div>
+                        <div className="font-medium">{trip.to_city}</div>
+                      </div>
+                    </div>
 
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm">
-                            {new Date(selectedTrip.departure_datetime).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
-                          </span>
-                        </div>
-                      </>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm">
+                        {new Date(trip.departure_datetime).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
 
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-gray-400" />
@@ -356,18 +322,14 @@ export function BookRide() {
 
                   {/* Price Breakdown */}
                   <div className="space-y-2">
-                    {selectedTrip && (
-                      <>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Price per seat</span>
-                          <span>${selectedTrip.price_per_seat}</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Number of seats</span>
-                          <span>×{formData.seats}</span>
-                        </div>
-                      </>
-                    )}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Price per seat</span>
+                      <span>${trip.price_per_seat}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Number of seats</span>
+                      <span>×{formData.seats}</span>
+                    </div>
                     <Separator />
                     <div className="flex justify-between font-bold text-lg">
                       <span>Total</span>

@@ -7,10 +7,11 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Separator } from '../components/ui/separator';
 import { toast } from 'sonner';
-import AuthService from '../../services/auth.service';
+import { useAuth } from '../../hooks/useAuth';
 
 export function Register() {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -46,15 +47,10 @@ export function Register() {
 
     setIsLoading(true);
     try {
-      const response = await AuthService.register({
+      await register({
         ...formData,
         user_type: 'passenger',
       });
-
-      // Store tokens and user data
-      localStorage.setItem('access_token', response.tokens.access);
-      localStorage.setItem('refresh_token', response.tokens.refresh);
-      localStorage.setItem('user', JSON.stringify(response.user));
 
       toast.success('Registration successful! Welcome to RideShare!');
       navigate('/');
