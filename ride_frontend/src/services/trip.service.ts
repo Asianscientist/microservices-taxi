@@ -1,5 +1,4 @@
 import api from './api';
-import TripService from '../../services/trip.service';
 
 export interface TripData {
   route_id: number;
