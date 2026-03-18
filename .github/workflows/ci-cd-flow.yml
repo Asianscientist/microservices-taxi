@@ -21,7 +21,13 @@ jobs:
           - 5432:5432
 
     env:
-      DATABASE_URL: postgres://test_user:test_pass@localhost:5432/test_db
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DJANGO_SETTINGS_MODULE: ride_backend.rideshare.settings
+
 
     steps:
     - uses: actions/checkout@v4
