@@ -44,10 +44,12 @@ jobs:
       run: pip install -r ride_backend/requirements.txt
 
     - name: Run migrations
-      run: python ride_backend/manage.py migrate
+      run: python manage.py migrate
+      working-directory: ride_backend
 
     - name: Run tests
       run: pytest
+      working-directory: ride_backend
 
   build-and-push:
     needs: test
