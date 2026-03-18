@@ -26,6 +26,7 @@ class TripSerializer(serializers.ModelSerializer):
 
 class TripListSerializer(serializers.ModelSerializer):
     """Simplified serializer for trip list"""
+    driver_id = serializers.IntegerField(source='driver.id', read_only=True)
     driver_name = serializers.CharField(source='driver.user.get_full_name', read_only=True)
     driver_rating = serializers.DecimalField(source='driver.average_rating', max_digits=3, decimal_places=2, read_only=True)
     available_seats_count = serializers.SerializerMethodField()
@@ -35,7 +36,7 @@ class TripListSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'from_city', 'to_city', 'departure_datetime',
             'estimated_arrival_datetime', 'price_per_seat', 'available_seats',
-            'available_seats_count', 'driver_name', 'driver_rating', 'status'
+            'available_seats_count', 'driver_id', 'driver_name', 'driver_rating', 'status'
         )
 
     def get_available_seats_count(self, obj):
