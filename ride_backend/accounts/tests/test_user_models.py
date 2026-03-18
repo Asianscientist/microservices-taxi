@@ -27,7 +27,7 @@ def test_user_str_representation():
     assert str(user) == "John Doe (john@example.com)"
 
 
-    @pytest.mark.django_db
+@pytest.mark.django_db
 def test_default_penalty_values():
 
     user = User.objects.create_user(
