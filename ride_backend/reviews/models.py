@@ -2,11 +2,11 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Avg
-from django.contrib.auth.models import User
+
 
 class Review(models.Model):
     booking = models.OneToOneField('trips.Booking', on_delete=models.CASCADE, related_name='review')
-    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_given')
+    reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reviews_given')
     reviewed_driver = models.ForeignKey('drivers.DriverProfile', on_delete=models.CASCADE, related_name='reviews_received')
     
     # Rating (1-5 stars)
