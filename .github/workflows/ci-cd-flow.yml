@@ -58,11 +58,11 @@ jobs:
     strategy:
       matrix:
         service:
-          - accounts-service
-          - drivers-service
-          - payments-service
-          - reviews-service
-          - trips-service
+          - accounts
+          - drivers
+          - payments
+          - reviews
+          - trips
 
     steps:
     - uses: actions/checkout@v4
