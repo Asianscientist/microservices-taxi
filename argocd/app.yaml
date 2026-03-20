@@ -1,0 +1,58 @@
+# dev
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservices-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/yourorg/microservices-app
+    targetRevision: main
+    path: helm/microservices-chart
+    helm:
+      valueFiles:
+        - ../../environments/dev-values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# staging — manual sync, no automated
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservices-staging
+  namespace: argocd
+spec:
+  source:
+    repoURL: https://github.com/yourorg/microservices-app
+    targetRevision: main
+    path: helm/microservices-chart
+    helm:
+      valueFiles:
+        - ../../environments/staging-values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+---
+# prod — manual sync + require explicit approval
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservices-prod
+  namespace: argocd
+spec:
+  source:
+    repoURL: https://github.com/yourorg/microservices-app
+    targetRevision: main
+    path: helm/microservices-chart
+    helm:
+      valueFiles:
+        - ../../environments/prod-values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prod
