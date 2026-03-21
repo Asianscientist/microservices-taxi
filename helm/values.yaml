@@ -90,6 +90,7 @@ postgres:
   dbUser: samandar           
   dbPassword: ""            
   storageSize: 2Gi
+  namespace: database
 
 django:
   secretKey: ""
@@ -97,3 +98,5 @@ django:
 ingress:
   enabled: true
   host: ""  
+
+serviceName: shared-taxi
