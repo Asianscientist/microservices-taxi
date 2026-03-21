@@ -1,0 +1,23 @@
+services:
+  user-service:
+    # image:
+    #   tag: "a1b2c3f"     
+    replicas: 3
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  order-service:
+    # image:
+    #   tag: "a1b2c3f"
+    replicas: 3
+  payment-service:
+    # image:
+    #   tag: "a1b2c3f"
+    replicas: 3
+
+postgres:
+  storageSize: 2Gi

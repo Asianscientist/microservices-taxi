@@ -1,0 +1,16 @@
+services:
+  user-service:
+    image:
+      tag: "a1b2c3f"     
+    replicas: 2
+  order-service:
+    image:
+      tag: "a1b2c3f"
+    replicas: 2
+  payment-service:
+    image:
+      tag: "a1b2c3f"
+    replicas: 2
+
+postgres:
+  storageSize: 2Gi
