@@ -83,6 +83,7 @@ jobs:
         context: ./ride_backend
         file: ./ride_backend/${{ matrix.service }}/Dockerfile
         build-args: SERVICE=${{ matrix.service }}
+        platforms: linux/amd64,linux/arm64  
         push: true
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest
