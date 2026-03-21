@@ -3,36 +3,97 @@ accountsService:
   image: 18c336445927/accounts-service:latest
   replicas: 1
   port: 8000
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
 
 driversService:
   name: drivers-service
   image: 18c336445927/drivers-service:latest
   replicas: 1
   port: 8000
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
 
 notificationsService:
   name: notifications-service
-  image: 18c336445927/notifications-service:latest
+  image: 18c336445927/notifications:latest
   replicas: 1
   port: 8000
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
 
 paymentsService:
   name: payments-service
-  image: 18c336445927/payments-service:latest
+  image: 18c336445927/payments:latest
   replicas: 1
   port: 8000
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
 
 reviewsService:
   name: reviews-service
-  image: 18c336445927/reviews-service:latest
+  image: 18c336445927/reviews:latest
   replicas: 1
   port: 8000
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
 
 tripsService:
   name: trips-service
-  image: 18c336445927/trips-service:latest
+  image: 18c336445927/trips:latest
   replicas: 1
   port: 8000
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
 
 imagePullSecrets:
   - name: dockerhub-secret
+
+dockerhub:
+  username: 18c336445927
+  password: ""         # I will pass via --set=
+
+postgres:
+  dbName: rideshare_db        
+  dbUser: samandar           
+  dbPassword: ""            
+  storageSize: 2Gi
+
+django:
+  secretKey: ""
+
+ingress:
+  enabled: true
+  host: ""  
