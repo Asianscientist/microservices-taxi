@@ -1,6 +1,6 @@
 accountsService:
   name: accounts-service
-  image: 18c336445927/accounts-service:latest
+  image: 18c336445927/accounts:latest
   replicas: 1
   port: 8000
   resources:
@@ -14,7 +14,7 @@ accountsService:
 
 driversService:
   name: drivers-service
-  image: 18c336445927/drivers-service:latest
+  image: 18c336445927/drivers:latest
   replicas: 1
   port: 8000
   resources:
