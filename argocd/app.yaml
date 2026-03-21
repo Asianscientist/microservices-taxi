@@ -1,3 +1,22 @@
+# dev
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservices-dev
+  namespace: argocd
+spec:
+  project: default        
+  source:
+    repoURL: https://github.com/Asianscientist/microservices-taxi
+    targetRevision: main
+    path: helm
+    helm:
+      valueFiles:
+        - ../environments/dev-values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+---
 # staging
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -5,7 +24,7 @@ metadata:
   name: microservices-staging
   namespace: argocd
 spec:
-  project: default        # ← add this
+  project: default        
   source:
     repoURL: https://github.com/Asianscientist/microservices-taxi
     targetRevision: main
@@ -24,7 +43,7 @@ metadata:
   name: microservices-prod
   namespace: argocd
 spec:
-  project: default        # ← add this
+  project: default        
   source:
     repoURL: https://github.com/Asianscientist/microservices-taxi
     targetRevision: main
