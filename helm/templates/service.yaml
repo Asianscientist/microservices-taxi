@@ -1,0 +1,40 @@
+{{- range $name, $svc := dict
+  "accounts"      .Values.accountsService
+  "drivers"       .Values.driversService
+  "notifications" .Values.notificationsService
+  "payments"      .Values.paymentsService
+  "reviews"       .Values.reviewsService
+  "trips"         .Values.tripsService
+}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $svc.name }}
+  labels:
+    app: {{ $svc.name }}
+    release: {{ $.Release.Name }}
+spec:
+  selector:
+    app: {{ $svc.name }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: {{ $svc.port }}
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $svc.name }}-postgres
+  namespace: {{ $.Release.Namespace }}
+spec:
+  selector:
+    app: {{ $svc.name }}-postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP  
+{{- end }}
