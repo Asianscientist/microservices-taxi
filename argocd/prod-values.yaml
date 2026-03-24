@@ -1,0 +1,27 @@
+accountsService:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+driversService:
+  replicas: 3
+
+notificationsService:
+  replicas: 3
+
+paymentsService:
+  replicas: 3
+
+reviewsService:
+  replicas: 3
+
+tripsService:
+  replicas: 3
+
+postgres:
+  storageSize: 2Gi

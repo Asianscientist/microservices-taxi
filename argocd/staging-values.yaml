@@ -1,0 +1,20 @@
+accountsService:
+  replicas: 2
+
+driversService:
+  replicas: 2
+
+notificationsService:
+  replicas: 2
+
+paymentsService:
+  replicas: 2
+
+reviewsService:
+  replicas: 2
+
+tripsService:
+  replicas: 2
+
+postgres:
+  storageSize: 2Gi

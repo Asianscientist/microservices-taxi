@@ -12,7 +12,7 @@ spec:
     path: helm
     helm:
       valueFiles:
-        - ../environments/dev-values.yaml
+        - dev-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: dev
@@ -31,7 +31,7 @@ spec:
     path: helm
     helm:
       valueFiles:
-        - ../environments/staging-values.yaml
+        - staging-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: staging
@@ -50,7 +50,7 @@ spec:
     path: helm
     helm:
       valueFiles:
-        - ../environments/prod-values.yaml
+        - prod-values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: prod
