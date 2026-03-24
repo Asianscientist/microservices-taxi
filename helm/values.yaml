@@ -88,12 +88,12 @@ dockerhub:
 postgres:
   dbName: rideshare_db        
   dbUser: samandar           
-  dbPassword: ""            
+  dbPassword: "4Yillikarmiya"            
   storageSize: 2Gi
   namespace: database
 
 django:
-  secretKey: ""
+  secretKey: "replace-with-real-secret-key-bilmaysanda"
 
 ingress:
   enabled: true
