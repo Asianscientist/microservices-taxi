@@ -3,8 +3,16 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.http import JsonResponse
+
+# Health check endpoint for Kubernetes probes
+def health_check(request):
+    return JsonResponse({"status": "healthy"})
 
 urlpatterns = [
+    # Health check
+    path('health/', health_check),
+    
     # Admin
     path('admin/', admin.site.urls),
     
