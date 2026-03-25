@@ -18,3 +18,16 @@ tripsService:
 
 postgres:
   storageSize: 2Gi
+  dbName: rideshare_db
+  dbUser: samandar
+  dbPassword: Samandar0405@
+
+django:
+  secretKey: "django-insecure-dev-key-change-in-production"
+
+dockerHub:
+  username: "18c336445927"
+  password: ""
+
+imagePullSecrets:
+  - name: dockerhub-secret

@@ -3,6 +3,14 @@ accountsService:
   image: 18c336445927/accounts:latest
   replicas: 1
   port: 8000
+  settingsModule: rideshare.settings
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
   resources:
     requests:
       memory: "128Mi"
@@ -17,6 +25,14 @@ driversService:
   image: 18c336445927/drivers:latest
   replicas: 1
   port: 8000
+  settingsModule: rideshare.settings
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
   resources:
     requests:
       memory: "128Mi"
@@ -31,6 +47,14 @@ notificationsService:
   image: 18c336445927/notifications:latest
   replicas: 1
   port: 8000
+  settingsModule: rideshare.settings
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
   resources:
     requests:
       memory: "64Mi"
@@ -44,6 +68,14 @@ paymentsService:
   image: 18c336445927/payments:latest
   replicas: 1
   port: 8000
+  settingsModule: rideshare.settings
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
   resources:
     requests:
       memory: "128Mi"
@@ -57,6 +89,14 @@ reviewsService:
   image: 18c336445927/reviews:latest
   replicas: 1
   port: 8000
+  settingsModule: rideshare.settings
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
   resources:
     requests:
       memory: "64Mi"
@@ -70,6 +110,14 @@ tripsService:
   image: 18c336445927/trips:latest
   replicas: 1
   port: 8000
+  settingsModule: rideshare.settings
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
   resources:
     requests:
       memory: "128Mi"
