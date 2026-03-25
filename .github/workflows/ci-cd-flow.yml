@@ -60,6 +60,7 @@ jobs:
         service:
           - accounts
           - drivers
+          - notifications
           - payments
           - reviews
           - trips
