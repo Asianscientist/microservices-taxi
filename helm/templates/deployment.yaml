@@ -97,7 +97,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  # namespace: {{ $.Release.Namespace }}
+  namespace: {{ .Values.postgres.namespace }}
   labels:
     app: postgres
 spec:
@@ -132,4 +132,4 @@ spec:
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
-            claimName: postgres-pvc
+            claimName: {{ .Values.serviceName }}-pvc
