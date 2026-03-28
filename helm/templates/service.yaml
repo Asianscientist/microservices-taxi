@@ -29,7 +29,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ $svc.name }}-postgres
-  namespace: {{ .Values.postgres.namespace }}
+  namespace: {{ .Values.postgres.namespace | default "dev" }}
 spec:
   selector:
     app: {{ $svc.name }}-postgres
