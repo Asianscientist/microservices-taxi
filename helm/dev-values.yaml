@@ -32,3 +32,6 @@ dockerHub:
 
 imagePullSecrets:
   - name: dockerhub-secret
+
+
+serviceName: shared-taxi
