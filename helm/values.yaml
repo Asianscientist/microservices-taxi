@@ -11,13 +11,6 @@ accountsService:
     limits:
       memory: "256Mi"
       cpu: "200m"
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "200m"
 
 
 driversService:
@@ -26,13 +19,6 @@ driversService:
   replicas: 1
   port: 8000
   settingsModule: rideshare.settings
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "200m"
   resources:
     requests:
       memory: "128Mi"
@@ -55,13 +41,6 @@ notificationsService:
     limits:
       memory: "128Mi"
       cpu: "100m"
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "50m"
-    limits:
-      memory: "128Mi"
-      cpu: "100m"
 
 paymentsService:
   name: payments-service
@@ -69,13 +48,6 @@ paymentsService:
   replicas: 1
   port: 8000
   settingsModule: rideshare.settings
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "200m"
   resources:
     requests:
       memory: "128Mi"
@@ -97,13 +69,6 @@ reviewsService:
     limits:
       memory: "128Mi"
       cpu: "100m"
-  resources:
-    requests:
-      memory: "64Mi"
-      cpu: "50m"
-    limits:
-      memory: "128Mi"
-      cpu: "100m"
 
 tripsService:
   name: trips-service
@@ -111,13 +76,6 @@ tripsService:
   replicas: 1
   port: 8000
   settingsModule: rideshare.settings
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "200m"
   resources:
     requests:
       memory: "128Mi"
